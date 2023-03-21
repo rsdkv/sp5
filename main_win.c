@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         printf("Error occurred: %s\n", errMsg);
         return -1;
     }
-    fgets(arr, S, file);
+    fgets(arr, S, file); // Место хранения данных, Максимальное число считываемых символов, Указатель на структуру FILE
     fclose(file);
 
     if (strlen(arr) < 2) {
@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
         chfname[0] = chc;// для передаче доч процессу аргументов от родительского
         strcat(chfname, ".txt "); //strcat -
         char source[100] = "subproc.exe ";
-        strcat(source, chfname);// название исп файла и название файла
+        strcat(source, chfname);// название исп файла и название файла,
+        // указатель на массив в который будет добавлена строка и указатель на массив из которого будет скопирована строка
 
         BOOL res = CreateProcess(
                 "subproc.exe",
