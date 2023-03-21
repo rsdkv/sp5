@@ -80,4 +80,57 @@ int main(int argc, char *argv[]) {
         char source[100] = "subproc.exe "; // объявление командной строки для запуска подпроцесса
         strcat(source, chfname); // добавление имени файла к командной строке
 
+        // Создание процесса с помощью функции CreateProcess
         BOOL res = CreateProcess(
+                "subproc.exe", // Имя исполняемого файла подпроцесса
+                source, // Аргументы командной строки для подпроцесса
+                NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+        // Проверка успешности создания процесса
+        if (!res) {
+            char *errMsg = strerror(errno); // Получение сообщения об ошибке
+            printf("Error occurred: %s\n", errMsg);
+            return 1; // Возврат ошибки
+        }
+        chfname[1] = '\0'; // Изменение имени файла
+        chc++; // Увеличение счетчика процессов
+        pid_arr[i] = pi.dwProcessId; // Сохранение идентификатора процесса
+        proc_arr[i] = pi.hProcess; // Сохранение дескриптора процесса
+        thread_arr[i] = pi.hThread; // Сохранение дескриптора потока
+
+// Ожидание завершения всех созданных процессов
+        int result = 0; // Инициализация результата
+        DWORD excode; // Инициализация кода завершения процесса
+
+        for (int i = 0; i < N; i++) {
+            DWORD dwRes = WaitForSingleObject(proc_arr[i], INFINITE); // Ожидание завершения процесса
+
+            if (dwRes == WAIT_FAILED) { // Проверка ошибок
+                printf("Error %lx\n", GetLastError());
+                return 1;
+            }
+            // Вычисление результата выполнения процесса
+            char filen[50];
+            char fres[S];
+
+            sprintf(filen, "%lu", pid_arr[i]); // Генерация имени файла результата
+            strcat(filen, ".txt"); // Добавление расширения
+            FILE *resfile;
+            resfile = fopen(filen, "r"); // Открытие файла с результатом
+            if (resfile == NULL) { // Проверка на ошибку
+                char *errMsg = strerror(errno);
+                printf("Error occurred: %s\n", errMsg);
+                return -1;
+            }
+            while (fgets(fres, S, resfile) != NULL); // Чтение результата из файла
+
+            result += atoi(fres); // Преобразование и добавление к результату
+            printf("Child process exited with pid %lu with code %d\n", pid_arr[i],
+                   GetExitCodeProcess(proc_arr[i], &excode)); // Вывод информации о завершении процесса
+            fclose(resfile); // Закрытие файла
+            CloseHandle(proc_arr[i]); // Освобождение ресурсов процесса
+            CloseHandle(thread_arr[i]); // Освобождение ресурсов потока
+        }
+
+        printf("Result is %d\n", result); // Вывод результата
+
+        return 0; // Возврат успешного завершения программы

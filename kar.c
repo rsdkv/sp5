@@ -43,12 +43,12 @@ int main(int argc, char *argv[]) {
     char filename[5];
     char slice[M];
     int len;
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {// разделение стринги по N файлам
         slice[0] = 0;
-        if (i == N - 1 & M % N != 0) {
+        if (i == N - 1 & M % N != 0) {//для последнего процесса
             len = M - (N - 1) * (M / N);
             strncat(slice, ptr, len);
-        } else {
+        } else {//для всех остальных
             len = M / N;
             strncat(slice, ptr, len);
             ptr = ptr + len;
@@ -57,11 +57,11 @@ int main(int argc, char *argv[]) {
         filename[0] = c;
         strcat(filename, ".txt");
         FILE *nfile = fopen(filename, "w+");
-        filename[1] = '\0';
+        filename[1] = '\0'; //символ для окончания записи null terminator
         c++;
 
         // WRITING N FILES
-        fwrite(slice, sizeof(char), len, nfile);
+        fwrite(slice, sizeof(char), len, nfile); //slice -
         slice[1] = '\0';
         fclose(nfile);
     }
@@ -69,47 +69,49 @@ int main(int argc, char *argv[]) {
     char chc = 'a';
     char chfname[5];
     u_long pid_arr[N];
-    HANDLE proc_arr[N];
-    HANDLE thread_arr[N];
+    HANDLE proc_arr[N];//создание процесса (массив процессов)
     for (int i = 0; i < N; i++) {
-        PROCESS_INFORMATION pi;
-        STARTUPINFO si;
+        PROCESS_INFORMATION pi;// презы  - инф о процессе
+        STARTUPINFO si; // init process
         GetStartupInfo(&si);
-        chfname[0] = chc;
-        strcat(chfname, ".txt ");
+        chfname[0] = chc;// для передаче доч процессу аргументов от родительского
+        strcat(chfname, ".txt "); //strcat -
         char source[100] = "subproc.exe ";
-        strcat(source, chfname);
+        strcat(source, chfname);// название исп файла и название файла
 
         BOOL res = CreateProcess(
                 "subproc.exe",
                 source,
-                NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
-
+                NULL,
+                NULL,
+                TRUE, 0,
+                NULL, NULL,
+                &si, &pi);
+// можно ли певый параметр указать null - можно, т к передан в source
         if (!res) {
             char *errMsg = strerror(errno);
             printf("Error occurred: %s\n", errMsg);
             return 1;
-        }
+        }// обработка ошибки по созданию процесса
         chfname[1] = '\0';
         chc++;
-        pid_arr[i] = pi.dwProcessId;
-        proc_arr[i] = pi.hProcess;
-        thread_arr[i] = pi.hThread;
+        pid_arr[i] = pi.dwProcessId;// id текущего доч процесса
+        proc_arr[i] = pi.hProcess; // передаётся текущий процесс(handle)
     }
 
     int result = 0;
     DWORD excode;
 
     for (int i = 0; i < N; i++) {
-        DWORD dwRes = WaitForSingleObject(proc_arr[i], INFINITE);
+        DWORD dwRes = WaitForSingleObject(proc_arr[i], INFINITE);//ожидание завершения доч процессов
 
-        if (dwRes == WAIT_FAILED) {
+        if (dwRes == WAIT_FAILED) {// если ожидание неуспешно завершилось
             printf("Error %lx\n", GetLastError());
             return 1;
         }
         // CALCULATING RESULT
-        char filen[50];
-        char fres[S];
+        char filen[50];//массив в который помещается айди процесса
+        char fres[S];//содержит рез от доч процесса
 
         sprintf(filen, "%lu", pid_arr[i]);
         strcat(filen, ".txt");
@@ -120,14 +122,14 @@ int main(int argc, char *argv[]) {
             printf("Error occurred: %s\n", errMsg);
             return -1;
         }
-        while (fgets(fres, S, resfile) != NULL);
+        while (fgets(fres, S, resfile) != NULL);// в fres из resfile
 
-        result += atoi(fres);
+        result += atoi(fres);//string to int
         printf("Child process exited with pid %lu with code %d\n", pid_arr[i],
                GetExitCodeProcess(proc_arr[i], &excode));
         fclose(resfile);
         CloseHandle(proc_arr[i]);
-        CloseHandle(thread_arr[i]);
+//        CloseHandle(thread_arr[i]);
     }
 
     printf("Result is %d\n", result);
@@ -135,47 +137,3 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-//--------------------------------------------------------------subproc.c
-
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <ctype.h>
-#include <windows.h>
-
-#define S 100
-
-int main(int argc, char *argv[]) {
-
-    Sleep(30000);
-    //READING FILE
-    FILE *file;
-    char arr[S];
-
-
-    file = fopen(argv[1], "r");
-    if (file == NULL) {
-        char *errMsg = strerror(errno);
-        printf("Error occurred: %s with %s\n", errMsg, argv[1]);
-        return -1;
-    }
-    while (fgets(arr, S, file) != NULL);
-    fclose(file);
-
-    //SOLVING TASK
-    int result = 0;
-    for (int i = 0; i < strlen(arr); i++) {
-        if (isdigit(arr[i])) result++;
-    }
-
-
-    //CREATING AND WRITING FILE
-    char filename[50];
-    sprintf(filename, "%lu", GetCurrentProcessId());
-    strcat(filename, ".txt");
-    FILE *nfile = fopen(filename, "w+");
-    fprintf(nfile, "%d", result);
-    fclose(nfile);
-    ExitProcess(1);
-
-}
