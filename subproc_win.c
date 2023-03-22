@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -14,7 +13,6 @@ int main(int argc, char *argv[]) {
     FILE *file;
     char arr[S];
 
-
     file = fopen(argv[1], "r");
     if (file == NULL) {
         char *errMsg = strerror(errno);
@@ -29,8 +27,6 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < strlen(arr); i++) {
         if (isdigit(arr[i])) result++;//подсчёт кол-ва цифр
     }
-
-
     //CREATING AND WRITING FILE
     char filename[50];
     sprintf(filename, "%lu", GetCurrentProcessId());// получение pid

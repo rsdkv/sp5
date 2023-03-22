@@ -36,7 +36,7 @@ int main(int argc, char * argv [])
         printf("Error occured: the number of symbols is less than 2 in the file (%s)\n", errMsg);
         return -1;
     }
-    else printf("File consists: %s\n", arr);
+    else printf("file content: %s\n", arr);
 
 
     int N = atoi(argv[2]);
@@ -128,6 +128,6 @@ int main(int argc, char * argv [])
         result += atoi(fres);
         printf("Process with pid %d exited with code %d\n", child, WEXITSTATUS(code));
     }
-    printf("Result is %d\n", result);
+    printf("Number of digits %d\n", result);
     return 0;
 }
