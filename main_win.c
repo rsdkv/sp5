@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         char *errMsg = strerror(errno);
         printf("Error occurred: the number of symbols is less than 2 in the file (%s)\n", errMsg);
         return -1;
-    } else printf("File consists: %s\n", arr);
+    } else printf("file content: %s\n", arr);
 
 
     int N = atoi(argv[2]);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         fclose(nfile);
     }
 
-    char chc = 'a';
+    char letter = 'a';
     char chfname[5];
     u_long pid_arr[N];
     HANDLE proc_arr[N];//создание процесса (массив процессов)
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
         PROCESS_INFORMATION pi;// презы  - инф о процессе
         STARTUPINFO si; // init process
         GetStartupInfo(&si);
-        chfname[0] = chc;// для передаче доч процессу аргументов от родительского
-        strcat(chfname, ".txt "); //strcat -
+        chfname[0] = letter;// для передаче доч процессу аргументов от родительского
+        strcat(chfname, ".txt"); //strcat -
         char source[100] = "subproc.exe ";
         strcat(source, chfname);// название исп файла и название файла,
         // указатель на массив в который будет добавлена строка и указатель на массив из которого будет скопирована строка
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }// обработка ошибки по созданию процесса
         chfname[1] = '\0';
-        chc++;
+        letter++;
         pid_arr[i] = pi.dwProcessId;// id текущего доч процесса
         proc_arr[i] = pi.hProcess; // передаётся текущий процесс(handle)
     }
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 //        CloseHandle(thread_arr[i]);
     }
 
-    printf("Result is %d\n", result);
+    printf("Number of digits %d\n", result);
 
     return 0;
 }
