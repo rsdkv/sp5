@@ -13,7 +13,7 @@ int main(int argc, char * argv [])
     if (argc != 3)
     {
         char * errMsg = strerror(errno);
-        printf("Error occured: the number of variables should be strongly 2 - file_name and N (%s)\n", errMsg);
+        printf("Error enter the required number of arguments %s\n", errMsg);
         return -1;
     }
     // READING FILE
@@ -33,7 +33,7 @@ int main(int argc, char * argv [])
     if (strlen(arr) < 2)
     {
         char * errMsg = strerror(errno);
-        printf("Error occured: the number of symbols is less than 2 in the file (%s)\n", errMsg);
+        printf("There must be at least 2 arguments in the file (%s)\n", errMsg);
         return -1;
     }
     else printf("file content: %s\n", arr);
@@ -44,10 +44,10 @@ int main(int argc, char * argv [])
     if (N > M/2)
     {
         N = M/2;
-        printf("Warning: children procceces have been reduced to %d\n", N);
+        printf("the number of child processes is reduced to %d\n", N);
     }
     // CREATING N FILES
-    char c = 'a';
+    char c = '1';
     char filename[5];
     char slice[M];
     int len;
@@ -78,7 +78,7 @@ int main(int argc, char * argv [])
         fclose(nfile);
     }
 
-    char chc = 'a';
+    char chc = '1';
     char chfname[5];
     for (int i = 0; i < N; i++)
     {
@@ -103,7 +103,7 @@ int main(int argc, char * argv [])
     for (int i = 0; i < N; i++)
     {
         int code = 0;
-        getchar();
+//        getchar();//зомби процесс
         pid_t child = wait(&code);
         if (child == -1)
         {
