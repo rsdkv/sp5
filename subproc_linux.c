@@ -10,22 +10,19 @@
 
 int main(int argc, char * argv[])
 {
-    //printf("CH: I'm process with pid %d and parent with pid %d\n", getpid(), getppid());
-
     //READING FILE
     FILE *file;
     char arr[S];
-    char *ptr = arr;
+//    char *ptr = arr;
     file = fopen(argv[1], "r");
-
     if (file == NULL)
     {
         char * errMsg = strerror(errno);
         printf("Error occured: %s\n", errMsg);
         return -1;
     }
-    while (fgets(arr, S, file) != NULL);
-
+    //while (fgets(arr, S, file) != NULL);
+    fgets(arr, S, file);
 
     //SOLVING TASK
     int result = 0;
@@ -36,11 +33,12 @@ int main(int argc, char * argv[])
 
 
     //CREATING AND WRITING FILE
-    char filename[50];
-    sprintf(filename, "%d", getpid());
-    strcat(filename, ".txt");
+    char filename[6];
+    printf("%d",getpid());
+    sprintf(filename, "%d", getpid());//getpid() возвращает идентификатор процесса вызывающего процесса
+    strcat(filename, ".txt");//создание файлов
     FILE *nfile = fopen(filename, "w+");
-    fprintf(nfile, "%d", result);
+    fprintf(nfile, "%d", result);//result отправляет в nfile
     fclose(file);
     fclose(nfile);
     exit(EXIT_SUCCESS);

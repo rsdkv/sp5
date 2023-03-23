@@ -12,8 +12,7 @@ int main(int argc, char * argv [])
 {
     if (argc != 3)
     {
-        char * errMsg = strerror(errno);
-        printf("Error enter the required number of arguments %s\n", errMsg);
+        printf("Error enter the required number of arguments\n");
         return -1;
     }
     // READING FILE
@@ -47,48 +46,48 @@ int main(int argc, char * argv [])
         printf("the number of child processes is reduced to %d\n", N);
     }
     // CREATING N FILES
-    char c = '1';
-    char filename[5];
+    char num_file = '1';
+    char pid_filename[6]; // т.к. pid = 2^22 = 6 цифр
     char slice[M];
     int len;
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)//беззнак инт
     {
         slice[0] = 0;
         if (i == N - 1 & M % N != 0)
         {
-            len = M - (N-1) * (M/N);
-            strncat(slice, ptr, len);
+            len = M - (N-1) * (M/N);//для последнего процесса
+            strncat(slice, ptr, len);//помещение рез слайса в новые строки
         }
         else
         {
             len = M/N;
-            strncat(slice, ptr, len);
+            strncat(slice, ptr, len);//помещение рез слайса в новые строки
             ptr = ptr + len;
         }
 
-        filename[0] = c;
-        strcat(filename, ".txt");
-        FILE *nfile = fopen(filename, "w+");
-        filename[1] = '\0';
-        c++;
+        pid_filename[0] = num_file;
+        strcat(pid_filename, ".txt");//создание 1.txt, 2.txt etc
+        FILE *nfile = fopen(pid_filename, "w+");//w+ - создание файла если его не сущ
+        pid_filename[1] = '\0';//нуль-терминатор, используемый для обозначения конца строк, т к не знаем длину строки
+        num_file++;
 
         // WRITING N FILES
         fwrite(slice, sizeof(char), len, nfile);
-        slice[1] = '\0';
+        slice[1] = '\0';//нуль-терминатор, используемый для обозначения конца строк, т к не знаем длину строки
         fclose(nfile);
     }
 
-    char chc = '1';
-    char chfname[5];
+    char char_filename = '1';
+    char pid_name[6];
     for (int i = 0; i < N; i++)
     {
-        chfname[0] = chc;
-        pid_t res = fork();
-        if (res == 0)
+        pid_name[0] = char_filename;
+        pid_t res = fork();//pid_t - тип данных для процесса, fork - – создаёт полную копию текущего процесса
+        if (res == 0)//обработка дочерних процессов (fork'a)
         {
-            strcat(chfname, ".txt");
-            char * args[3] = {"subproc", chfname, NULL};
-            execve("./subproc", args, NULL);
+            strcat(char_filename, ".txt");//создание файла под доч процессы
+            char * args[3] = {"subproc", char_filename, NULL};//объявление арг для доч проц
+            execve("./subproc", args, NULL);//заменяет текущий процесс на новый, исполняемый файл которого передан в качестве аргумента
         }
         if (res == -1)
         {
@@ -96,37 +95,39 @@ int main(int argc, char * argv [])
             printf("Error occured: %s\n", errMsg);
             return 1;
         }
-        chfname[1] = '\0';
-        chc++;
+//        pid_name[1] = '\0';
+        char_filename++;
     }
     int result = 0;
     for (int i = 0; i < N; i++)
     {
-        int code = 0;
+        int code = 0;//с презентации
 //        getchar();//зомби процесс
-        pid_t child = wait(&code);
+        pid_t child = wait(&code);//выполняет ожидание завершения процесса и предоставляет код его завершения в качестве выходных данных
         if (child == -1)
         {
-            printf("Error %d\n", errno);
+            printf("Error waiting %d\n", errno);
             return 1;
         }
 
         // CALCULATING RESULT
-        char filename[50];
-        char fres[S];
-        sprintf(filename, "%d", child);
-        strcat(filename, ".txt");
-        FILE *resfile = fopen(filename, "r");
-        if (resfile == NULL)
+        char filename[6];//массив в который помещается айди процесса
+        char result_of_proc[S];//содержит рез от доч процесса
+        sprintf(filename, "%lld", child);//помещение в 1 3
+        strcat(filename, ".txt");//создание файла под доч процессы
+        FILE *result_file = fopen(filename, "r");
+        if (result_file == NULL)
         {
             char * errMsg = strerror(errno);
             printf("Error occured: %s\n", errMsg);
             return -1;
         }
-        while (fgets(fres, S, resfile) != NULL);
-        fclose(resfile);
-        result += atoi(fres);
-        printf("Process with pid %d exited with code %d\n", child, WEXITSTATUS(code));
+//        while (fgets(result_of_proc, S, result_file) != NULL);
+        fgets(result_of_proc, S, result_file);//dest-result_of_proc, source - result_file
+        fclose(result_file);
+        result += atoi(result_of_proc);
+        printf("Process with pid %d exited with code %d\n", child, WEXITSTATUS(code));//WEXITSTATUS(code)-макрос, получение корректного кода возврата из дочернего процесса
+        //child - pid
     }
     printf("Number of digits %d\n", result);
     return 0;
