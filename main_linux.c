@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <wait.h>
-
 #define S 100
 int main(int argc, char * argv [])
 {
@@ -23,7 +22,7 @@ int main(int argc, char * argv [])
     if (file == NULL)
     {
         char * errMsg = strerror(errno);
-        printf("Error occured: %s\n", errMsg);
+        printf("111Error occured: %s\n", errMsg);
         return -1;
     }
     fgets(arr, S, file);
@@ -47,7 +46,7 @@ int main(int argc, char * argv [])
     }
     // CREATING N FILES
     char num_file = '1';
-    char pid_filename[6]; // т.к. pid = 2^22 = 6 цифр
+    char filename[6]; // т.к. pid = 2^22 = 6 цифр
     char slice[M];
     int len;
     for (size_t i = 0; i < N; i++)//беззнак инт
@@ -65,10 +64,10 @@ int main(int argc, char * argv [])
             ptr = ptr + len;
         }
 
-        pid_filename[0] = num_file;
-        strcat(pid_filename, ".txt");//создание 1.txt, 2.txt etc
-        FILE *nfile = fopen(pid_filename, "w+");//w+ - создание файла если его не сущ
-        pid_filename[1] = '\0';//нуль-терминатор, используемый для обозначения конца строк, т к не знаем длину строки
+        filename[0] = num_file;
+        strcat(filename, ".txt");//создание 1.txt, 2.txt etc склеивание строк
+        FILE *nfile = fopen(filename, "w+");//w+ - создание файла если его не сущ
+        filename[1] = '\0';//нуль-терминатор, используемый для обозначения конца строк, т к не знаем длину строки
         num_file++;
 
         // WRITING N FILES
@@ -85,17 +84,17 @@ int main(int argc, char * argv [])
         pid_t res = fork();//pid_t - тип данных для процесса, fork - – создаёт полную копию текущего процесса
         if (res == 0)//обработка дочерних процессов (fork'a)
         {
-            strcat(char_filename, ".txt");//создание файла под доч процессы
-            char * args[3] = {"subproc", char_filename, NULL};//объявление арг для доч проц
+            strcat(pid_name, ".txt");//создание файла под доч процессы
+            char * args[3] = {"subproc", pid_name, NULL};//объявление арг для доч проц
             execve("./subproc", args, NULL);//заменяет текущий процесс на новый, исполняемый файл которого передан в качестве аргумента
         }
         if (res == -1)
         {
             char * errMsg = strerror(errno);
-            printf("Error occured: %s\n", errMsg);
+            printf("222Error occured: %s\n", errMsg);
             return 1;
         }
-//        pid_name[1] = '\0';
+        pid_name[1] = '\0';
         char_filename++;
     }
     int result = 0;
@@ -111,23 +110,22 @@ int main(int argc, char * argv [])
         }
 
         // CALCULATING RESULT
-        char filename[6];//массив в который помещается айди процесса
+        char pid_arr_temp[50];//массив в который помещается айди процесса
         char result_of_proc[S];//содержит рез от доч процесса
-        sprintf(filename, "%lld", child);//помещение в 1 3
-        strcat(filename, ".txt");//создание файла под доч процессы
-        FILE *result_file = fopen(filename, "r");
+        sprintf(pid_arr_temp, "%d", child);//помещение в 1 3
+        strcat(pid_arr_temp, ".txt");//создание файла под доч процессы
+        FILE *result_file = fopen(pid_arr_temp, "r");
         if (result_file == NULL)
         {
             char * errMsg = strerror(errno);
-            printf("Error occured: %s\n", errMsg);
+            printf("333Error occured: %s\n", errMsg);
             return -1;
         }
-//        while (fgets(result_of_proc, S, result_file) != NULL);
-        fgets(result_of_proc, S, result_file);//dest-result_of_proc, source - result_file
+        while (fgets(result_of_proc, S, result_file) != NULL);
+//        fgets(result_of_proc, S, result_file);//dest-result_of_proc, source - result_file
         fclose(result_file);
         result += atoi(result_of_proc);
-        printf("Process with pid %d exited with code %d\n", child, WEXITSTATUS(code));//WEXITSTATUS(code)-макрос, получение корректного кода возврата из дочернего процесса
-        //child - pid
+        printf("Process with pid %d exited with code %d\n", child, WEXITSTATUS(code));//WEXITSTATUS(code)-макрос, получение корректного кода возврата из дочернего процесса child - pid
     }
     printf("Number of digits %d\n", result);
     return 0;
